@@ -1,0 +1,18 @@
+//Ejecutar este comando desde el Executed Anonimous, para actualziar todos los registros de contractos,
+//se creo un campo MasiveUpdate__c en el Obj. Contratos el cual es texto y esta oculto, 
+//este campo se le pondra un . para simular una modificacion masiva de todos contratos.
+
+// Define una lista de objetos Contracts__c que deseas actualizar
+List<Contract> contratosParaActualizar = new List<Contract>();
+
+// Busca todos los registros Contracts__c en tu organización
+contratosParaActualizar = [SELECT Id, MasiveUpdate__c FROM Contract];
+
+// Realiza las actualizaciones necesarias en los registros
+for (Contract contrato : contratosParaActualizar) {
+    // Actualiza el campo MasiveUpdate__c con el nuevo valor que desees
+    contrato.MasiveUpdate__c = '.';
+}
+
+// Actualiza los registros en Salesforce
+update contratosParaActualizar;

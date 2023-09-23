@@ -1,0 +1,27 @@
+trigger OpportunityTrigger on Opportunity (after update) {
+    // Crea una lista para almacenar los contratos que necesitan actualización
+    List<Contract> ContratosActualizados = new List<Contract>();
+    
+    for (Opportunity opp : Trigger.new) {
+        Opportunity oldOpp = Trigger.oldMap.get(opp.Id);
+        
+        // Comprueba si la oportunidad se ha modificado
+        if ( opp.Asegurado__c != oldOpp.Asegurado__c ) {
+            // Si se ha modificado, busca el contrato relacionado
+            Contract contrato = [SELECT Id, Nombre_de_la_Oportunidad__c FROM Contract WHERE Nombre_de_la_Oportunidad__c =: opp.Id];
+            
+            if (contrato != null) {
+                
+                // Actualiza el campo "Nombre" del contrato con el nuevo nombre de la oportunidad
+                contrato.MasiveUpdate__c ='.';
+                contratosActualizados.add(contrato);
+            }
+        }
+        
+    }
+    
+    // Actualiza los contactos en una única transacción
+    if (!contratosActualizados.isEmpty()) {
+        update contratosActualizados;
+    }
+}

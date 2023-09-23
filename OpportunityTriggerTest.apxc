@@ -1,0 +1,59 @@
+@isTest
+public class OpportunityTriggerTest {
+    // Método de prueba para verificar el comportamiento del trigger
+    static testMethod void testOpportunityTrigger() {
+        // Crea cuentas de tipo Asegurado, Cedente y Cliente Comercial
+        Account asegurado = new Account(Name = 'Asegurado', Pais__c = 'AR - Argentina', Razon_Social__c = '123', Tipo_de_cuenta__c='Asegurado');
+        Account cedente = new Account(Name = 'Cedente', Pais__c = 'AR - Argentina', Razon_Social__c = '123', Abreviatura__c = 'Ce', Tipo_de_cuenta__c='Cedente');
+        Account clienteComercial = new Account(Name = 'Cliente Comercial', Pais__c = 'AR - Argentina', Razon_Social__c = '123', Actividad__c = 'Broker de seguros', Tipo_de_cuenta__c='Cliente Comercial');
+        insert new List<Account>{asegurado, cedente, clienteComercial};
+            
+            // Crea un producto
+            Product2 producto = new Product2(Name = 'Producto de Prueba', Nombre_de_producto_en_ingles__c = 'Test Product', Abreviacion__c ='TP', Categor_a_de_producto__c = 'Aviation', Description='test' );
+        insert producto;
+        
+        // Crea una oportunidad relacionada con las cuentas y el producto
+        Opportunity opp = new Opportunity(
+            Name = 'Oportunidad de Prueba',
+            Asegurado__c = asegurado.Id,
+            Cedente__c = cedente.Id,
+            Cliente_Comercial__c = clienteComercial.Id,
+            Producto__c = producto.Id,
+            Type = 'Reamerica',
+            CloseDate = date.parse('22/09/2023'),
+            Destinatario_de_la_documentacion__c = asegurado.Id,
+            Empresa_emisora__c = 'SOM.US',
+            Moneda__c ='USD - Dólar estadounidense',
+            Tipo_de_Contrato__c = 'Reaseguro',
+            Modalidad_de_Contrato__c = 'Facultativo Cuota Parte',
+            StageName = 'Aguardando informacion de cliente'
+        );
+        insert opp;
+        
+        // Crea un contrato relacionado con la oportunidad
+        Contract contrato = new Contract(Nombre_de_la_Oportunidad__c = opp.Id, 
+                                         Moneda_del_contrato__c = 'USD - Dólar estadounidense',
+                                         OwnerExpirationNotice = '15',
+                                         AccountId = cedente.Id,
+                                         status = 'SCLC (enviado al proveedor/es con subje)');
+        insert contrato;
+        
+        // Cambia el valor del campo Asegurado__c en la oportunidad
+        // Crea un nuevo Asegurado
+        Account nuevoAsegurado = new Account( Name = 'Nuevo Asegurado', Pais__c = 'AR - Argentina', Razon_Social__c = '456', Tipo_de_cuenta__c = 'Asegurado' );
+        insert nuevoAsegurado;
+        
+        // Asigna el nuevo Asegurado al campo Asegurado__c de la oportunidad
+        opp.Asegurado__c = nuevoAsegurado.Id;
+        
+        // Actualiza la oportunidad para aplicar el cambio
+        update opp;
+        
+        
+        // Recupera el contrato actualizado
+        contrato = [SELECT MasiveUpdate__c FROM Contract WHERE Id = :contrato.Id];
+        
+        // Verifica que el campo MasiveUpdate__c del contrato se haya actualizado correctamente
+        System.assertEquals('.', contrato.MasiveUpdate__c, 'El campo MasiveUpdate__c del contrato no se actualizó correctamente');
+    }
+}
